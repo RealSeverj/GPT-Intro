@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from fake_useragent import UserAgent
-
+from tqdm import tqdm
 
 class KnowledgeCrawler:
     def __init__(self, search_engine="bing"):
@@ -25,7 +25,8 @@ class KnowledgeCrawler:
             soup = BeautifulSoup(res.text, 'html.parser')
 
             results = []
-            for item in soup.select('li.b_algo')[:max_results]:
+            items = soup.select('li.b_algo')[:max_results]
+            for item in tqdm(items, desc="Crawling pages", unit="page"):
                 link = item.find('a')['href']
                 if content := self._crawl_page(link):
                     results.append(content)
