@@ -1,19 +1,19 @@
 # 模型参数
 MODEL_CONFIG = {
-    "vocab_size": 256,
-    "d_model": 256,
-    "nhead": 4,
-    "num_layers": 6,
-    "block_size": 64
+    "vocab_size": 16,
+    "d_model": 16,
+    "nhead": 1,
+    "num_layers": 1,
+    "block_size": 16
 }
 
 # 训练参数
 TRAIN_CONFIG = {
-    "batch_size": 32,
-    "base_epochs": 3,
+    "batch_size": 1,
+    "base_epochs": 1,
     "learning_rate": 1e-4,
-    "max_seq_len": 256,
-    "max_iters": 1000,
-    "lr_decay_iters": 1000,
-    "dropout": 0.1
+    "max_seq_len": 16,
+    "max_iters": 10,
+    "lr_decay_iters": 10,
+    "dropout": 0.0
 }

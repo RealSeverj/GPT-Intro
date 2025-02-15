@@ -1,33 +1,31 @@
+from datasets import load_dataset
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from src.model.transformer import MiniGPT
-from src.utils.data_loader import TextDataset
+from src.utils.data_loader import TextDataset, collate_fn
 from config import settings as cfg
 from tqdm import tqdm
 import os
 
 def main():
-    # 初始化模型
-    model = MiniGPT()
-    optimizer = torch.optim.AdamW(model.parameters(),
-                                  lr=cfg.TRAIN_CONFIG["learning_rate"])
+    # 检查是否有可用的GPU
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using {device} device")
 
-    # 数据加载配置
-    dataset = TextDataset('data/raw/shakespeare.txt')
-    train_loader = DataLoader(
-        dataset,
-        batch_size=cfg.TRAIN_CONFIG["batch_size"],
-        shuffle=True,
-        num_workers=0,  # 设置为0以使用CPU
-        pin_memory=False
-    )
+    # Initialize model
+    model = MiniGPT().to(device)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.TRAIN_CONFIG["learning_rate"])
 
-    # 训练循环配置
+    # Data loading configuration
+    dataset = TextDataset('CausalLM/Refined-Anime-Text', cache_dir='data')
+    train_loader = DataLoader(dataset, batch_size=cfg.TRAIN_CONFIG["batch_size"], shuffle=True, num_workers=0, pin_memory=False, collate_fn=collate_fn)
+
+    # Training loop configuration
     criterion = nn.CrossEntropyLoss()
     model.train()
 
-    # 创建输出目录
+    # Create output directory
     output_dir = 'output'
     os.makedirs(output_dir, exist_ok=True)
 
@@ -35,33 +33,25 @@ def main():
         total_loss = 0.0
         progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc=f'Epoch {epoch + 1}')
         for batch_idx, (x, y) in progress_bar:
-            # 使用view代替reshape以提高效率
-            x = x.view(-1, cfg.MODEL_CONFIG["block_size"])
-            y = y.view(-1, cfg.MODEL_CONFIG["block_size"])
+            if x.size(1) % cfg.MODEL_CONFIG["block_size"] != 0 or y.size(1) % cfg.MODEL_CONFIG["block_size"] != 0:
+                continue
+            x = x.view(-1, cfg.MODEL_CONFIG["block_size"]).to(device)
+            y = y.view(-1, cfg.MODEL_CONFIG["block_size"]).to(device)
 
-            # 初始化memory张量
-            memory = torch.zeros(x.size(0), cfg.MODEL_CONFIG["block_size"], cfg.MODEL_CONFIG["d_model"])
+            memory = torch.zeros(x.size(0), cfg.MODEL_CONFIG["block_size"], cfg.MODEL_CONFIG["d_model"]).to(device)
 
-            # 前向传播
             outputs = model(x, memory)
-            loss = criterion(
-                outputs.view(-1, cfg.MODEL_CONFIG["vocab_size"]),
-                y.view(-1)
-            )
+            loss = criterion(outputs.view(-1, cfg.MODEL_CONFIG["vocab_size"]), y.view(-1))
 
-            # 反向传播和优化
-            optimizer.zero_grad(set_to_none=True)  # 减少内存操作
+            optimizer.zero_grad(set_to_none=True)
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
 
             total_loss += loss.item()
-
-            # 更新进度条
             avg_loss = total_loss / (batch_idx + 1)
             progress_bar.set_postfix(loss=avg_loss)
 
-        # 保存检查点
         torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
@@ -69,10 +59,8 @@ def main():
             'loss': total_loss,
         }, os.path.join(output_dir, f'checkpoint_epoch_{epoch}.pth'))
 
-    # 保存最终模型
     torch.save(model.state_dict(), os.path.join(output_dir, 'final_model.pth'))
-    print("训练完成！")
-
+    print("Training complete!")
 
 if __name__ == "__main__":
     main()
