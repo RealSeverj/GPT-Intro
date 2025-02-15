@@ -19,7 +19,7 @@ def main():
 
     # Data loading configuration
     dataset = TextDataset('CausalLM/Refined-Anime-Text', cache_dir='data')
-    train_loader = DataLoader(dataset, batch_size=cfg.TRAIN_CONFIG["batch_size"], shuffle=True, num_workers=0, pin_memory=False, collate_fn=collate_fn)
+    train_loader = DataLoader(dataset, batch_size=cfg.TRAIN_CONFIG["batch_size"], shuffle=True, num_workers=16, pin_memory=False, collate_fn=collate_fn)
 
     # Training loop configuration
     criterion = nn.CrossEntropyLoss()
