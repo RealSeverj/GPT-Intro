@@ -1,16 +1,19 @@
+import os
+import sys
 import torch
 import torch.nn.functional as F
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.model import MiniGPT
 from src.utils.tokenizer import CharTokenizer
 from config import settings as cfg
 
 def load_model(model_path):
     model = MiniGPT()
-    model.load_state_dict(torch.load(model_path))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()
     return model
 
-def generate_text(instruction, model, tokenizer, max_length=200, temperature=1.0, top_k=50):
+def generate_text(instruction, model, tokenizer, max_length=100, temperature=0.7, top_k=50):
     input_ids = tokenizer.encode(instruction)
     input_ids = [i for i in input_ids if i < tokenizer.vocab_size]  # Ensure indices are within vocab size
     with torch.no_grad():
@@ -22,9 +25,9 @@ def generate_text(instruction, model, tokenizer, max_length=200, temperature=1.0
             probabilities = F.softmax(filtered_logits, dim=-1)
             next_id = torch.multinomial(probabilities, 1).item()
             if next_id >= tokenizer.vocab_size:
-                next_id = 0  # Handle out-of-vocab indices
+                next_id = tokenizer.unk_token_id  # Handle out-of-vocab indices
             input_ids.append(next_id)
-            if next_id == tokenizer.encode('\n')[0]:  # Assuming newline character indicates end of response
+            if next_id == tokenizer.encode(' ')[0]:  # Assuming newline character indicates end of response
                 break
     return tokenizer.decode(input_ids)
 

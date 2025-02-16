@@ -15,7 +15,7 @@ class TextDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, idx):
-        text = self.dataset[idx]['INSTRUCTION'] + self.dataset[idx]['RESPONSE']
+        text = self.dataset[idx]['text']
         x = [ord(c) if ord(c) < self.vocab_size else 0 for c in text[:self.block_size]]
         y = [ord(c) if ord(c) < self.vocab_size else 0 for c in text[1:self.block_size + 1]]
         return torch.tensor(x), torch.tensor(y)
