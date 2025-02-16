@@ -6,10 +6,13 @@ class CharTokenizer:
         # 创建一个包含所有ASCII字符的词汇表
         self.vocab = {chr(i): i for i in range(256)}
 
+        '''
         # 如果需要，扩展字符集，加入更多的字符（例如中文字符）
         self.vocab.update({chr(i): i + 256 for i in range(0x4e00, 0x9fff + 1)})  # Add Chinese characters to the vocab
         # 添加常见标点符号和符号（例如，逗号，感叹号）
         punctuation = ['，', '！', '。', '？', '；', '：', '“', '”', '（', '）', '【', '】', '《', '》']
+        '''
+
         for i, char in enumerate(punctuation, start=len(self.vocab)):
             self.vocab[char] = i
 

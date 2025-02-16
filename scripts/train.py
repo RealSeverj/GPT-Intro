@@ -27,7 +27,7 @@ def main():
     scaler = GradScaler() if device.type == "cuda" else None  # 混合精度梯度缩放器
 
     # 数据加载优化配置
-    dataset = TextDataset('bzb2023/Zhihu-KOL-More-Than-100-Upvotes', cache_dir='data', device=device)
+    dataset = TextDataset(cfg.TRAIN_CONFIG["dataset"], cache_dir='data', device=device)
     train_loader = DataLoader(
         dataset,
         batch_size=cfg.TRAIN_CONFIG["batch_size"],

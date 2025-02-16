@@ -1,6 +1,6 @@
 # 模型参数
 MODEL_CONFIG = {
-    "vocab_size": 66000,
+    "vocab_size": 256,
     "d_model": 256,
     "nhead": 2,
     "num_layers": 2,
@@ -15,5 +15,7 @@ TRAIN_CONFIG = {
     "max_seq_len": 256,
     "max_iters": 500,
     "lr_decay_iters": 500,
-    "dropout": 0.1
+    "dropout": 0.1,
+    "dataset": "roneneldan/TinyStories"
+
 }
