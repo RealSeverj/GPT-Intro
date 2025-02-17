@@ -3,15 +3,15 @@ MODEL_CONFIG = {
     "vocab_size": 256,
     "d_model": 256,
     "nhead": 2,
-    "num_layers": 2,
-    "block_size": 64
+    "num_layers": 4,
+    "block_size": 256
 }
 
 # 训练参数
 TRAIN_CONFIG = {
-    "batch_size": 32,
-    "base_epochs": 1,
-    "learning_rate": 1e-4,
+    "batch_size": 256,
+    "base_epochs": 3,
+    "learning_rate": 5e-5,
     "max_seq_len": 256,
     "max_iters": 500,
     "lr_decay_iters": 500,
