@@ -32,7 +32,7 @@ def main():
         dataset,
         batch_size=cfg.TRAIN_CONFIG["batch_size"],
         shuffle=True,
-        num_workers=12 if device.type == "cuda" else 16,  # GPU建议8-12个worker
+        num_workers=8 if device.type == "cuda" else 16,  # GPU建议8-12个worker
         persistent_workers=True,  # 保持worker进程
         collate_fn=collate_fn
     )
@@ -56,8 +56,8 @@ def main():
             if x.size(1) % cfg.MODEL_CONFIG["block_size"] != 0 or y.size(1) % cfg.MODEL_CONFIG["block_size"] != 0:
                 continue
 
-            x = x.view(-1, cfg.MODEL_CONFIG["block_size"]).to(device, non_blocking=True)
-            y = y.view(-1, cfg.MODEL_CONFIG["block_size"]).to(device, non_blocking=True)
+            x = x.view(-1, cfg.MODEL_CONFIG["block_size"]).to(device, non_blocking=True).long()
+            y = y.view(-1, cfg.MODEL_CONFIG["block_size"]).to(device, non_blocking=True).long()
 
             # 使用混合精度训练
             with autocast(enabled=device.type == "cuda"):

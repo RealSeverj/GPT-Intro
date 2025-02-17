@@ -13,7 +13,7 @@ def load_model(model_path):
     model.eval()
     return model
 
-def generate_text(instruction, model, tokenizer, max_length=100, temperature=0.7, top_k=50):
+def generate_text(instruction, model, tokenizer, max_length=200, temperature=0.5, top_k=30):
     input_ids = tokenizer.encode(instruction)
     input_ids = [i for i in input_ids if i < tokenizer.vocab_size]  # Ensure indices are within vocab size
     with torch.no_grad():
@@ -27,7 +27,7 @@ def generate_text(instruction, model, tokenizer, max_length=100, temperature=0.7
             if next_id >= tokenizer.vocab_size:
                 next_id = tokenizer.unk_token_id  # Handle out-of-vocab indices
             input_ids.append(next_id)
-            if next_id == tokenizer.encode(' ')[0]:  # Assuming newline character indicates end of response
+            if next_id == tokenizer.encode('\n')[0]:  # Assuming newline character indicates end of response
                 break
     return tokenizer.decode(input_ids)
 
